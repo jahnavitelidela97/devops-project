@@ -1,0 +1,31 @@
+name: CI/CD Pipeline
+
+# This tells GitHub: "Run this script every single time I push code to the main branch"
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest  # GitHub will open a fresh Linux computer in the cloud for us
+    steps:
+    
+    - name: Checkout Code
+      uses: actions/checkout@v3  # Step 1: Copy your code onto GitHub's cloud computer
+
+    - name: Run Unit Tests
+      run: python -m unittest discover -s app  # Step 2: Run your Python test script
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2  # Step 3: Securely log into your Docker Hub account
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v4  # Step 4: Turn your app into a Docker image and upload it
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}--devops-app:latest
+
